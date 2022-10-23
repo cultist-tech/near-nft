@@ -78,7 +78,7 @@ enum StorageKey {
     // Bind to owner extension
     BindToOwner,
 
-    //Upgradable extension
+    // Upgradable extension
     EntityUpgrade,
 }
 
@@ -171,7 +171,7 @@ impl Contract {
             pub tokens_to_reveal: UnorderedSet<TokenId>,
             pub token_reveal_time_by_id: LookupMap<TokenId, u64>,
 
-            pub upgrade_prices: Option<LookupMap<UpgradeKey, u128>>,
+            // pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,
         }
 
         #[derive(BorshDeserialize)]
@@ -221,7 +221,7 @@ impl Contract {
             token_reveal_time_by_id: old.tokens.token_reveal_time_by_id,
 
             //
-            upgrade_prices: old.tokens.upgrade_prices,
+            upgrade_prices: Some(LookupMap::new(StorageKey::EntityUpgrade)),
         };
 
         Self {
