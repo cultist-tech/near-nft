@@ -23,6 +23,7 @@ use mfight_sdk::nft::{
     TokenCollection,
     TokenType,
     TokenSubType,
+    TokenTypes,
     TokenMetadata,
     NFTContractMetadata,
     NFT_METADATA_SPEC,
@@ -30,6 +31,7 @@ use mfight_sdk::nft::{
     TokenId,
     NonFungibleToken,
     UpgradeKey,
+    UpgradePrice,
 };
 
 //mod mt_callback;
@@ -71,16 +73,19 @@ enum StorageKey {
     NftRoyalty,
 
     // Extra info
-    TokenRarity,
-    TokenCollection,
-    TokenType,
-    TokenSubType,
+    TokenRarity,     
+    //TokenCollection,  //Remove to end types migration
+    //TokenType,        //Remove to end types migration
+    //TokenSubType,     //Remove to end types migration
 
     // Bind to owner extension
     BindToOwner,
 
     // Upgradable extension
-    EntityUpgrade,
+    UpgradePrefix,
+    
+    //Types collection
+    TokenTypes,
 }
 
 #[near_bindgen]
@@ -117,12 +122,13 @@ impl Contract {
             StorageKey::RevealTokens,
             StorageKey::RevealTime,
 
-            Some(StorageKey::TokenRarity),
-            Some(StorageKey::TokenCollection),
-            Some(StorageKey::TokenType),
-            Some(StorageKey::TokenSubType),
+            Some(StorageKey::TokenRarity),             //Some(StorageKey::TokenCollection),  //Remove to end types migration
+            //Some(StorageKey::TokenType),        //Remove to end types migration
+            //Some(StorageKey::TokenSubType),     //Remove to end types migration
 
-            Some(StorageKey::EntityUpgrade)
+            Some(StorageKey::UpgradePrefix),
+            
+            Some(StorageKey::TokenTypes),
         );
 
         Self {
@@ -134,9 +140,11 @@ impl Contract {
         }
     }
 
+    /*
+    // Remove to end types migarations
     #[init(ignore_state)]
     #[private]
-    pub fn migrate() -> Self {
+    pub fn migrate_types() -> Self {
         #[derive(BorshDeserialize, BorshSerialize)]
         pub struct OldNonFungibleToken {
             // The storage size in bytes for each new token
@@ -166,13 +174,15 @@ impl Contract {
             pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
             pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
             pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
-
+            
+            
             // required by reveal extension
             pub token_hidden_metadata: UnorderedSet<TokenMetadata>,
             pub tokens_to_reveal: UnorderedSet<TokenId>,
             pub token_reveal_time_by_id: LookupMap<TokenId, u64>,
 
-            // pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,
+            //pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,       
+            
         }
 
         #[derive(BorshDeserialize)]
@@ -212,7 +222,7 @@ impl Contract {
 
             // ===== Extra =====
             token_rarity_by_id: old.tokens.token_rarity_by_id,
-            token_collection_by_id: old.tokens.token_collection_by_id,
+            token_collection_by_id: old.tokens.token_collection_by_id,   
             token_type_by_id: old.tokens.token_type_by_id,
             token_sub_type_by_id: old.tokens.token_sub_type_by_id,
 
@@ -222,7 +232,143 @@ impl Contract {
             token_reveal_time_by_id: old.tokens.token_reveal_time_by_id,
 
             //
-            upgrade_prices: Some(LookupMap::new(StorageKey::EntityUpgrade)),
+            upgrade_prices: Some(LookupMap::new(StorageKey::UpgradePrefix)),
+            
+            token_types_by_id: Some(LookupMap::new(StorageKey::TokenTypes)),
+        };
+
+        Self {
+            tokens,
+            owner_id: old.owner_id,
+            metadata: old.metadata,
+            pause: old.pause,
+            blacklist: old.blacklist,
+        }
+    }*/
+
+    /*
+    // Remove to end migration
+    #[private]
+    pub fn migrate_token_to_new_types(&mut self, token_id: TokenId,) {
+        
+        let mut token_type_map: TokenTypes = HashMap::new();
+        
+        let collections = self.tokens.token_collection_by_id.as_mut().unwrap();
+        
+        if let Some(collection) = &collections.get(&token_id) {
+            token_type_map.insert("collection".to_string(), collection.to_string());
+            collections.remove(&token_id);
+        }
+        
+        let token_types = self.tokens.token_type_by_id.as_mut().unwrap();
+        
+        if let Some(token_type) = &token_types.get(&token_id) {
+            token_type_map.insert("token_type".to_string(), token_type.to_string());
+            token_types.remove(&token_id);
+        }
+        
+        let token_sub_types = self.tokens.token_sub_type_by_id.as_mut().unwrap();
+        
+        if let Some(token_sub_type) = &token_sub_types.get(&token_id) {
+            token_type_map.insert("token_sub_type".to_string(), token_sub_type.to_string());
+            token_sub_types.remove(&token_id);
+        }        
+       
+        if token_type_map.len()>0 {
+            self.tokens.token_types_by_id.as_mut().unwrap().insert(&token_id, &token_type_map);            
+        }   
+    }*/
+    
+    #[init(ignore_state)]
+    #[private]
+    pub fn migrate_types_end() -> Self {
+        #[derive(BorshDeserialize, BorshSerialize)]
+        pub struct OldNonFungibleToken {
+            // The storage size in bytes for each new token
+            pub extra_storage_in_bytes_per_token: StorageUsage,
+
+            // always required
+            pub owner_by_id: TreeMap<TokenId, AccountId>,
+
+            // required by metadata extension
+            pub token_metadata_by_id: Option<LookupMap<TokenId, TokenMetadata>>,
+
+            // required by enumeration extension
+            pub tokens_per_owner: Option<LookupMap<AccountId, UnorderedSet<TokenId>>>,
+
+            // required by approval extension
+            pub approvals_by_id: Option<LookupMap<TokenId, HashMap<AccountId, u64>>>,
+            pub next_approval_id_by_id: Option<LookupMap<TokenId, u64>>,
+
+            // required by royalty and nft_payout extensions
+            pub royalty: RoyaltyFeature,
+
+            // required by bind_to_owner extension
+            pub bind_to_owner: BindToOwnerFeature,
+
+            // TODO experimental
+            pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,
+            pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
+            pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
+            pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
+            
+            // Add to end migration
+            pub token_types_by_id: Option<LookupMap<TokenId, HashMap<String,String>>>,
+
+            // required by reveal extension
+            pub token_hidden_metadata: UnorderedSet<TokenMetadata>,
+            pub tokens_to_reveal: UnorderedSet<TokenId>,
+            pub token_reveal_time_by_id: LookupMap<TokenId, u64>,
+
+            pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,       
+            
+        }
+
+        #[derive(BorshDeserialize)]
+        struct Old {
+            owner_id: AccountId,
+            tokens: OldNonFungibleToken,
+            metadata: LazyOption<NFTContractMetadata>,
+
+            pause: PauseFeature,
+            blacklist: BlacklistFeature,
+        }
+
+        let old: Old = env::state_read().expect("Error");
+
+        let tokens = NonFungibleToken {
+            // The storage size in bytes for each new token
+            extra_storage_in_bytes_per_token: old.tokens.extra_storage_in_bytes_per_token,
+
+            // always required
+            owner_by_id: old.tokens.owner_by_id,
+
+            // required by metadata extension
+            token_metadata_by_id: old.tokens.token_metadata_by_id,
+
+            // required by enumeration extension
+            tokens_per_owner: old.tokens.tokens_per_owner,
+
+            // required by approval extension
+            approvals_by_id: old.tokens.approvals_by_id,
+            next_approval_id_by_id: old.tokens.next_approval_id_by_id,
+
+            // ===== Royalty =====
+            royalty: old.tokens.royalty,
+
+            // ===== Lock =====
+            bind_to_owner: old.tokens.bind_to_owner,
+
+            // ===== Extra =====
+            token_rarity_by_id: old.tokens.token_rarity_by_id,           
+            
+            token_types_by_id: old.tokens.token_types_by_id,
+            //
+            token_hidden_metadata: old.tokens.token_hidden_metadata,
+            tokens_to_reveal: old.tokens.tokens_to_reveal,
+            token_reveal_time_by_id: old.tokens.token_reveal_time_by_id,
+           
+            upgrade_prices: old.tokens.upgrade_prices,
         };
 
         Self {
@@ -233,6 +379,8 @@ impl Contract {
             blacklist: old.blacklist,
         }
     }
+
+
 
     pub fn assert_owner(&self) {
         assert_eq!(env::predecessor_account_id(), env::current_account_id(), "Access Denied");
