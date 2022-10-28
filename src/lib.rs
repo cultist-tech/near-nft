@@ -74,9 +74,9 @@ enum StorageKey {
 
     // Extra info
     TokenRarity,     
-    //TokenCollection,  //Remove to end types migration
-    //TokenType,        //Remove to end types migration
-    //TokenSubType,     //Remove to end types migration
+    TokenCollection,  //Remove to end types migration
+    TokenType,        //Remove to end types migration
+    TokenSubType,     //Remove to end types migration
 
     // Bind to owner extension
     BindToOwner,
@@ -122,9 +122,9 @@ impl Contract {
             StorageKey::RevealTokens,
             StorageKey::RevealTime,
 
-            Some(StorageKey::TokenRarity),             //Some(StorageKey::TokenCollection),  //Remove to end types migration
-            //Some(StorageKey::TokenType),        //Remove to end types migration
-            //Some(StorageKey::TokenSubType),     //Remove to end types migration
+            Some(StorageKey::TokenRarity),             Some(StorageKey::TokenCollection),  //Remove to end types migration
+            Some(StorageKey::TokenType),        //Remove to end types migration
+            Some(StorageKey::TokenSubType),     //Remove to end types migration
 
             Some(StorageKey::UpgradePrefix),
             
@@ -140,7 +140,7 @@ impl Contract {
         }
     }
 
-    /*
+    
     // Remove to end types migarations
     #[init(ignore_state)]
     #[private]
@@ -244,9 +244,9 @@ impl Contract {
             pause: old.pause,
             blacklist: old.blacklist,
         }
-    }*/
+    }
 
-    /*
+    
     // Remove to end migration
     #[private]
     pub fn migrate_token_to_new_types(&mut self, token_id: TokenId,) {
@@ -277,8 +277,9 @@ impl Contract {
         if token_type_map.len()>0 {
             self.tokens.token_types_by_id.as_mut().unwrap().insert(&token_id, &token_type_map);            
         }   
-    }*/
+    }
     
+    /*
     #[init(ignore_state)]
     #[private]
     pub fn migrate_types_end() -> Self {
@@ -378,7 +379,7 @@ impl Contract {
             pause: old.pause,
             blacklist: old.blacklist,
         }
-    }
+    }*/
 
 
 
