@@ -23,6 +23,7 @@ use mfight_sdk::nft::{
     TokenCollection,
     TokenType,
     TokenSubType,
+    TokenTypes,
     TokenMetadata,
     NFTContractMetadata,
     NFT_METADATA_SPEC,
@@ -30,6 +31,7 @@ use mfight_sdk::nft::{
     TokenId,
     NonFungibleToken,
     UpgradeKey,
+    UpgradePrice,
 };
 
 //mod mt_callback;
@@ -72,15 +74,18 @@ enum StorageKey {
 
     // Extra info
     TokenRarity,
-    TokenCollection,
-    TokenType,
-    TokenSubType,
+    TokenCollection,  //Remove to end types migration
+    TokenType,        //Remove to end types migration
+    TokenSubType,     //Remove to end types migration
 
     // Bind to owner extension
     BindToOwner,
 
     // Upgradable extension
-    EntityUpgrade,
+    UpgradePrefix,
+
+    //Types collection
+    TokenTypes,
 }
 
 #[near_bindgen]
@@ -117,12 +122,13 @@ impl Contract {
             StorageKey::RevealTokens,
             StorageKey::RevealTime,
 
-            Some(StorageKey::TokenRarity),
-            Some(StorageKey::TokenCollection),
-            Some(StorageKey::TokenType),
-            Some(StorageKey::TokenSubType),
+            Some(StorageKey::TokenRarity),             Some(StorageKey::TokenCollection),  //Remove to end types migration
+            Some(StorageKey::TokenType),        //Remove to end types migration
+            Some(StorageKey::TokenSubType),     //Remove to end types migration
 
-            Some(StorageKey::EntityUpgrade)
+            Some(StorageKey::UpgradePrefix),
+
+            Some(StorageKey::TokenTypes),
         );
 
         Self {
@@ -133,6 +139,7 @@ impl Contract {
             blacklist: BlacklistFeature::new(StorageKey::BlacklistAccounts),
         }
     }
+
 
     #[init(ignore_state)]
     #[private]
@@ -161,18 +168,21 @@ impl Contract {
             // required by bind_to_owner extension
             pub bind_to_owner: BindToOwnerFeature,
 
-            // TODO experimental
+            // required by upgrade extension
             pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,
             pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
             pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
             pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
+
+            pub token_types_by_id: Option<LookupMap<TokenId, TokenTypes>>,
 
             // required by reveal extension
             pub token_hidden_metadata: UnorderedSet<TokenMetadata>,
             pub tokens_to_reveal: UnorderedSet<TokenId>,
             pub token_reveal_time_by_id: LookupMap<TokenId, u64>,
 
-            // pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,
+            // required by upgrade extension
+            pub upgrade_prices: Option<LookupMap<UpgradeKey, UpgradePrice>>,
         }
 
         #[derive(BorshDeserialize)]
@@ -222,7 +232,9 @@ impl Contract {
             token_reveal_time_by_id: old.tokens.token_reveal_time_by_id,
 
             //
-            upgrade_prices: Some(LookupMap::new(StorageKey::EntityUpgrade)),
+            upgrade_prices: old.tokens.upgrade_prices,
+
+            token_types_by_id: old.tokens.token_types_by_id,
         };
 
         Self {
