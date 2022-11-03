@@ -19,10 +19,7 @@ use mfight_sdk::blacklist::BlacklistFeature;
 use mfight_sdk::nft::royalty::RoyaltyFeature;
 use mfight_sdk::nft::bind_to_owner::BindToOwnerFeature;
 use mfight_sdk::nft::{
-    TokenRarity,
-    TokenCollection,
-    TokenType,
-    TokenSubType,
+    TokenRarity,    
     TokenTypes,
     TokenMetadata,
     NFTContractMetadata,
@@ -73,10 +70,7 @@ enum StorageKey {
     NftRoyalty,
 
     // Extra info
-    TokenRarity,
-    TokenCollection,  //Remove to end types migration
-    TokenType,        //Remove to end types migration
-    TokenSubType,     //Remove to end types migration
+    TokenRarity,    
 
     // Bind to owner extension
     BindToOwner,
@@ -85,7 +79,7 @@ enum StorageKey {
     UpgradePrefix,
 
     //Types collection
-    TokenTypes,
+    Types,
 }
 
 #[near_bindgen]
@@ -122,13 +116,12 @@ impl Contract {
             StorageKey::RevealTokens,
             StorageKey::RevealTime,
 
-            Some(StorageKey::TokenRarity),             Some(StorageKey::TokenCollection),  //Remove to end types migration
-            Some(StorageKey::TokenType),        //Remove to end types migration
-            Some(StorageKey::TokenSubType),     //Remove to end types migration
-
+            Some(StorageKey::TokenRarity),      
+            Some(StorageKey::Types),
+            
             Some(StorageKey::UpgradePrefix),
 
-            Some(StorageKey::TokenTypes),
+            
         );
 
         Self {
@@ -169,10 +162,7 @@ impl Contract {
             pub bind_to_owner: BindToOwnerFeature,
 
             // required by upgrade extension
-            pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,
-            pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
-            pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
-            pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
+            pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,            
 
             pub token_types_by_id: Option<LookupMap<TokenId, TokenTypes>>,
 
@@ -221,10 +211,9 @@ impl Contract {
             bind_to_owner: old.tokens.bind_to_owner,
 
             // ===== Extra =====
-            token_rarity_by_id: old.tokens.token_rarity_by_id,
-            token_collection_by_id: old.tokens.token_collection_by_id,
-            token_type_by_id: old.tokens.token_type_by_id,
-            token_sub_type_by_id: old.tokens.token_sub_type_by_id,
+            token_rarity_by_id: old.tokens.token_rarity_by_id,     
+            
+            token_types_by_id: old.tokens.token_types_by_id,
 
             //
             token_hidden_metadata: old.tokens.token_hidden_metadata,
@@ -234,7 +223,7 @@ impl Contract {
             //
             upgrade_prices: old.tokens.upgrade_prices,
 
-            token_types_by_id: old.tokens.token_types_by_id,
+            
         };
 
         Self {
