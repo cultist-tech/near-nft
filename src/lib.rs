@@ -80,6 +80,9 @@ enum StorageKey {
 
     //Types collection
     Types,
+    
+    //Burner extension
+    Burner
 }
 
 #[near_bindgen]
@@ -120,8 +123,7 @@ impl Contract {
             Some(StorageKey::Types),
             
             Some(StorageKey::UpgradePrefix),
-
-            
+            Some(StorageKey::Burner)            
         );
 
         Self {
@@ -222,6 +224,7 @@ impl Contract {
 
             //
             upgrade_prices: old.tokens.upgrade_prices,
+            burner_upgrade_prices: Some(LookupMap::new(StorageKey::Burner)),
 
             
         };
@@ -255,6 +258,8 @@ mfight_sdk::impl_non_fungible_token_royalty!(Contract, tokens, assert_owner);
 mfight_sdk::impl_non_fungible_token_bind_to_owner!(Contract, tokens);
 mfight_sdk::impl_non_fungible_token_reveal!(Contract, tokens, assert_action);
 mfight_sdk::impl_non_fungible_token_upgradable!(Contract, tokens, assert_owner);
+mfight_sdk::impl_non_fungible_token_burner!(Contract, tokens, assert_owner);
+
 
 mfight_sdk::impl_pause_feature!(Contract, pause, assert_owner);
 mfight_sdk::impl_blacklist_feature!(Contract, blacklist, assert_owner);
