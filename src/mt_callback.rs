@@ -3,6 +3,7 @@ use near_sdk::json_types::U128;
 use crate::*;
 use near_sdk::serde::{ Deserialize, Serialize };
 use mfight_sdk::mt::MultiFungibleTokenReceiver;
+use mfight_sdk::nft::UpdateOnFtTransferArgs;
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -19,7 +20,7 @@ impl MultiFungibleTokenReceiver for Contract {
         amounts: Vec<U128>,
         msg: String
     ) -> PromiseOrValue<Vec<U128>> {
-        let MtTransferArgs { token_id } = near_sdk::serde_json
+        let args: MtTransferArgs = near_sdk::serde_json
             ::from_str(&msg)
             .expect("Invalid MtTransferArgs");
         let mt_token_id = env::predecessor_account_id();
@@ -42,21 +43,11 @@ impl MultiFungibleTokenReceiver for Contract {
         assert!(amount1.0 > 0, "Amount must be greater than 0");
         assert!(amount2.0 > 0, "Amount must be greater than 0");
 
-        let owner_id = self.tokens.owner_by_id.get(&token_id).expect("Not found token");
-        assert_eq!(sender_id, owner_id, "Only owner can call");
+        assert_eq!(U128::from(amount2.0 * 10), amount1, "Invalid attached amount of tokens");
 
-        let next_rarity = self.tokens.assert_next_rarity(&token_id);
-        let token_type = self.tokens.token_type_by_id
-            .as_mut()
-            .unwrap()
-            .get(&token_id)
-            .expect("Not found token");
-        let price = self.tokens.internal_upgrade_price(&token_type, &next_rarity);
-
-        assert_eq!(U128::from(price.0 * 10), amount1, "Invalid attached amount of tokens (FT)");
-        assert_eq!(price, amount2, "Invalid attached amount of tokens (XP)");
-
-        self.tokens.internal_upgrade_token_unguarded(&owner_id, &token_id, &next_rarity);
+        self.tokens.internal_on_ft_transfer(&UpdateOnFtTransferArgs {
+            token_id: args.token_id,
+        }, &account1, &amount1.into(), &sender_id);
 
         return PromiseOrValue::Value(vec![U128::from(0), U128::from(0)]);
     }
