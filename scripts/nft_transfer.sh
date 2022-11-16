@@ -39,4 +39,7 @@ TOKEN_ID="8173"
 #near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8173\", \"receiver_id\":\"testninja.testnet\" }"
 #near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8174\", \"receiver_id\":\"sergeysova.testnet\" }"
 #near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8055\", \"receiver_id\":\"vinechka.testnet\" }" --depositYocto 1
-near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8054\", \"receiver_id\":\"dtdesigner.testnet\" }" --depositYocto 1
+#near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8054\", \"receiver_id\":\"dtdesigner.testnet\" }" --depositYocto 1
+#near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8052\", \"receiver_id\":\"andyjr.testnet\" }" --depositYocto 1
+near call $CONTRACT_NAME nft_transfer --accountId $CONTRACT_NAME "{ \"token_id\": \"8051\", \"receiver_id\":\"elystrand.testnet\" }" --depositYocto 1
+
